@@ -26,6 +26,10 @@ COPY postBuild /usr/local/bin/postBuild.sh
 RUN chown $UID:$GID /usr/local/bin/postBuild.sh && \
     chmod u+x /usr/local/bin/postBuild.sh
 
+COPY entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN chown $UID:$GID /usr/local/bin/entrypoint.sh && \
+    chmod u+x /usr/local/bin/entrypoint.sh
+
 USER $USER
 # install miniconda
 ENV MINICONDA_VERSION latest
@@ -49,8 +53,7 @@ WORKDIR $PROJECT_DIR
 # build the conda environment
 ENV ENV_PREFIX $PROJECT_DIR/env
 RUN conda update --name base --channel defaults conda && \
-    conda env create --prefix $ENV_PREFIX --file /tmp/environment.yml --force && \
-    conda clean --all --yes
+    conda env create --prefix $ENV_PREFIX --file /tmp/environment.yml
 # run the postBuild script to install any JupyterLab extensions
 RUN conda activate $ENV_PREFIX && \
     /usr/local/bin/postBuild.sh && \
@@ -58,8 +61,14 @@ RUN conda activate $ENV_PREFIX && \
 
 ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
 
+# expose port for jupyter
+EXPOSE 8888
+
+# password for jupyter
+ENV JUPYTER_TOKEN eureka
+
 # default command will launch JupyterLab server for development
-CMD [ "jupyter", "lab", "--no-browser", "--ip", "0.0.0.0" ]
+CMD [ "jupyter", "lab", "--no-browser", "--ip", "0.0.0.0", "--port", "8888" ]
 
 
 # Build
