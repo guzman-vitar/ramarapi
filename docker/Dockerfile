@@ -61,19 +61,23 @@ RUN conda activate $ENV_PREFIX && \
 
 ENTRYPOINT [ "/usr/local/bin/entrypoint.sh" ]
 
-# expose port for jupyter
+# expose port the api
 EXPOSE 8888
 
 # password for jupyter
 ENV JUPYTER_TOKEN eureka
 
-# default command will launch JupyterLab server for development
-CMD [ "jupyter", "lab", "--no-browser", "--ip", "0.0.0.0", "--port", "8888" ]
+# copy source files for the Ramarapi
+COPY /src $PROJECT_DIR/src
+
+# run API
+CMD ["uvicorn", "src.main:app", "--host", "0.0.0.0", "--port", "8888"] 
 
 
-# Build
-#docker image build \
-#  --build-arg username=$USER \
-#  --file Dockerfile \
-#  --tag $IMAGE_NAME:$IMAGE_TAG \
-#  ../
+# comandos útiles:
+
+# inicializar el container con jupyter
+# CMD [ "jupyter", "lab", "--no-browser", "--ip", "0.0.0.0" ]
+
+# image build
+# docker image build --build-arg username=$USER --file Dockerfile --tag ramarapi-conda:$IMAGE_TAG ..
